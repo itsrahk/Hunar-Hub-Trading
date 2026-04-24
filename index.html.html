@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HunarHub — Trading Mastery Program</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --gold: #D4A843;
+  --gold-bright: #F0C354;
+  --gold-dim: rgba(212,168,67,0.15);
+  --green: #22D87A;
+  --red: #FF4D6D;
+  --bg: #06080A;
+  --bg2: #0B0F14;
+  --bg3: #101620;
+  --bg4: #151D28;
+  --text: #EEF0F4;
+  --muted: #6B7A8D;
+  --border: rgba(212,168,67,0.12);
+  --border-bright: rgba(212,168,67,0.35);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold); }
+
+/* ── NOISE TEXTURE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; opacity: 0.4;
+}
+
+/* ══════════════════════
+   NAV
+══════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 56px;
+  height: 68px;
+  background: rgba(6,8,10,0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.7rem; letter-spacing: 3px;
+  color: var(--gold);
+  display: flex; align-items: center; gap: 2px;
+}
+.nav-logo span { color: var(--text); }
+.nav-logo::before {
+  content: '◆';
+  font-size: 0.55rem;
+  color: var(--green);
+  margin-right: 8px;
+  animation: blinkDot 2.5s infinite;
+}
+@keyframes blinkDot { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.nav-center { display: flex; gap: 0; }
+.nav-center a {
+  color: var(--muted); text-decoration: none;
+  font-size: 0.78rem; font-weight: 500;
+  letter-spacing: 1.8px; text-transform: uppercase;
+  padding: 8px 20px;
+  border-radius: 4px;
+  transition: color 0.25s, background 0.25s;
+}
+.nav-center a:hover { color: var(--gold); background: var(--gold-dim); }
+
+.nav-cta {
+  background: var(--gold);
+  color: #06080A;
+  padding: 9px 22px;
+  border-radius: 4px;
+  font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 0 24px rgba(212,168,67,0.25);
+}
+.nav-cta:hover { background: var(--gold-bright); transform: translateY(-1px); }
+
+/* ══════════════════════
+   TICKER
+══════════════════════ */
+.ticker-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
+  height: 36px;
+  background: rgba(6,8,10,0.95);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; overflow: hidden;
+}
+.ticker-track {
+  display: flex; gap: 64px; white-space: nowrap;
+  animation: runTicker 40s linear infinite;
+}
+.t-item { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+.t-sym { color: var(--gold); font-weight: 600; }
+.t-up { color: var(--green); }
+.t-dn { color: var(--red); }
+@keyframes runTicker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ══════════════════════
+   HERO
+══════════════════════ */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 88px 56px 60px;
+  position: relative;
+  background:
+    radial-gradient(ellipse 60% 80% at 75% 30%, rgba(212,168,67,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 5% 70%, rgba(34,216,122,0.04) 0%, transparent 50%),
+    var(--bg);
+  overflow: hidden;
+}
+
+/* Grid background */
+#hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(212,168,67,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,168,67,0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  pointer-events: none;
+}
+
+/* Horizontal accent line */
+#hero::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.hero-wrap {
+  position: relative; z-index: 2;
+  max-width: 1200px; width: 100%; margin: 0 auto;
+  display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 72px; align-items: center;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  border: 1px solid var(--border-bright);
+  background: rgba(212,168,67,0.06);
+  padding: 6px 18px; border-radius: 100px;
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--gold); letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 28px;
+  animation: slideDown 0.7s ease both;
+}
+.hero-eyebrow .dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blinkDot 2s infinite; }
+
+.hero-h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.2rem, 6vw, 5.2rem);
+  line-height: 0.97; letter-spacing: 2px;
+  color: var(--text);
+  animation: slideDown 0.7s 0.12s ease both;
+}
+.hero-h1 .accent { color: var(--gold); display: block; }
+.hero-h1 .stroke {
+  -webkit-text-stroke: 1.5px var(--gold);
+  color: transparent;
+  display: block;
+}
+
+.hero-desc {
+  color: var(--muted); font-size: 0.97rem; line-height: 1.75;
+  max-width: 460px;
+  margin: 22px 0 36px;
+  animation: slideDown 0.7s 0.24s ease both;
+}
+
+.hero-stats {
+  display: flex; gap: 0; margin-bottom: 40px;
+  animation: slideDown 0.7s 0.36s ease both;
+}
+.hstat {
+  padding: 0 28px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.hstat:first-child { padding-left: 0; }
+.hstat:last-child { border-right: none; }
+.hstat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.1rem; font-weight: 700; line-height: 1;
+  color: var(--gold);
+}
+.hstat-num sup { font-size: 1rem; color: var(--green); }
+.hstat-lbl { font-size: 0.68rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 5px; }
+
+.hero-actions {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  animation: slideDown 0.7s 0.48s ease both;
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold) 0%, #B8882A 100%);
+  color: #06080A; padding: 13px 30px; border-radius: 4px;
+  font-weight: 700; font-size: 0.88rem; letter-spacing: 1px; text-transform: uppercase;
+  text-decoration: none; border: none; cursor: pointer;
+  box-shadow: 0 0 32px rgba(212,168,67,0.3);
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(212,168,67,0.4); }
+
+.btn-ghost {
+  background: transparent; color: var(--text);
+  padding: 13px 30px; border-radius: 4px;
+  font-weight: 600; font-size: 0.88rem; letter-spacing: 1px; text-transform: uppercase;
+  text-decoration: none; border: 1px solid rgba(255,255,255,0.12); cursor: pointer;
+  transition: border-color 0.25s, color 0.25s;
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── HERO CHART PANEL ── */
+.chart-panel {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  animation: slideUp 0.8s 0.3s ease both;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,168,67,0.06);
+}
+.cp-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg4);
+}
+.cp-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; }
+.cp-live {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(34,216,122,0.1); color: var(--green);
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.cp-live::before { content:''; width:5px;height:5px;background:var(--green);border-radius:50%;animation:blinkDot 1.5s infinite; }
+.chart-body { padding: 20px 22px; }
+.chart-canvas-wrap { height: 180px; }
+
+.market-tiles {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+}
+.m-tile {
+  background: var(--bg3); padding: 14px 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: background 0.2s;
+  cursor: default;
+}
+.m-tile:hover { background: var(--bg4); }
+.m-sym { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+.m-price { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-top: 2px; }
+.m-chg { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600; }
+.m-chg.up { color: var(--green); }
+.m-chg.dn { color: var(--red); }
+
+@keyframes slideDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideUp   { from{opacity:0;transform:translateY(24px)}  to{opacity:1;transform:translateY(0)} }
+
+/* ══════════════════════
+   SECTION COMMONS
+══════════════════════ */
+.section-eyebrow {
+  display: flex; align-items: center; gap: 14px; justify-content: center;
+  margin-bottom: 18px;
+}
+.section-eyebrow::before, .section-eyebrow::after {
+  content: ''; flex: 1; max-width: 80px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-bright));
+}
+.section-eyebrow::before { background: linear-gradient(90deg, var(--border-bright), transparent); }
+.section-eyebrow span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase;
+}
+.section-h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+  letter-spacing: 2px; text-align: center; line-height: 1;
+  color: var(--text); margin-bottom: 14px;
+}
+.section-h2 span { color: var(--gold); }
+.section-sub {
+  text-align: center; color: var(--muted); font-size: 0.95rem; line-height: 1.75;
+  max-width: 540px; margin: 0 auto 60px;
+}
+
+/* reveal */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ══════════════════════
+   PROGRAMS — PAGE 2
+══════════════════════ */
+#programs {
+  padding: 110px 56px 90px;
+  background:
+    radial-gradient(ellipse 80% 50% at 0% 60%, rgba(34,216,122,0.04) 0%, transparent 45%),
+    var(--bg2);
+  position: relative;
+}
+
+.programs-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+  max-width: 1100px; margin: 0 auto 70px;
+}
+
+.prog-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 36px 32px;
+  position: relative; overflow: hidden;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.prog-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.prog-card.crypto::before { background: linear-gradient(90deg, #F7931A 0%, transparent 60%); }
+.prog-card.forex::before  { background: linear-gradient(90deg, #00B4D8 0%, transparent 60%); }
+.prog-card.psx-t::before  { background: linear-gradient(90deg, var(--green) 0%, transparent 60%); }
+.prog-card.psx-i::before  { background: linear-gradient(90deg, var(--gold) 0%, transparent 60%); }
+
+.prog-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,168,67,0.2);
+  border-color: rgba(212,168,67,0.25);
+}
+
+.pc-icon-wrap {
+  width: 52px; height: 52px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; margin-bottom: 22px;
+}
+.crypto .pc-icon-wrap { background: rgba(247,147,26,0.1); }
+.forex  .pc-icon-wrap { background: rgba(0,180,216,0.1); }
+.psx-t  .pc-icon-wrap { background: rgba(34,216,122,0.1); }
+.psx-i  .pc-icon-wrap { background: rgba(212,168,67,0.1); }
+
+.pc-num {
+  position: absolute; top: 24px; right: 28px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 4rem;
+  color: rgba(255,255,255,0.03); letter-spacing: 2px; line-height: 1;
+  pointer-events: none; user-select: none;
+}
+
+.prog-card h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem; letter-spacing: 1.5px; margin-bottom: 10px; color: var(--text);
+}
+.prog-card p {
+  font-size: 0.86rem; color: var(--muted); line-height: 1.75; margin-bottom: 20px;
+}
+
+.bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.68rem; font-family: 'JetBrains Mono', monospace;
+  color: var(--muted); margin-bottom: 6px; letter-spacing: 0.5px;
+}
+.bar-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; margin-bottom: 18px; }
+.bar-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--green));
+  animation: fillBar 1.8s 0.5s ease both;
+  transform-origin: left;
+}
+@keyframes fillBar { from { width: 0 !important; } }
+
+.pc-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.pc-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.5px;
+  padding: 4px 10px; border-radius: 3px;
+  background: rgba(212,168,67,0.07);
+  color: var(--gold); border: 1px solid var(--border);
+}
+
+/* Sparklines */
+.sparkline-wrap { height: 54px; margin: 14px 0; }
+
+/* ── PRICING ── */
+.pricing-box {
+  max-width: 1000px; margin: 0 auto;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 18px; padding: 52px;
+  position: relative; overflow: hidden;
+}
+.pricing-box::after {
+  content: 'TRADING MASTERCLASS';
+  position: absolute; top: 22px; right: 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 4px; color: rgba(212,168,67,0.08); text-transform: uppercase;
+}
+/* top glow line */
+.pricing-box::before {
+  content: '';
+  position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.pricing-inner {
+  display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 52px; align-items: start;
+}
+.pricing-left h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem; letter-spacing: 1.5px; line-height: 1.2;
+  margin-bottom: 14px; color: var(--text);
+}
+.pricing-left p { font-size: 0.86rem; color: var(--muted); line-height: 1.8; margin-bottom: 24px; }
+.inc-list { list-style: none; }
+.inc-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.85rem; color: var(--muted); padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.inc-list li:last-child { border-bottom: none; }
+.inc-list li::before { content: '✦'; color: var(--gold); font-size: 0.55rem; margin-top: 4px; flex-shrink: 0; }
+
+.price-cards { display: flex; flex-direction: column; gap: 18px; }
+.price-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 28px 30px; position: relative;
+}
+.price-card.featured {
+  border-color: rgba(212,168,67,0.4);
+  background: linear-gradient(135deg, rgba(212,168,67,0.07) 0%, rgba(212,168,67,0.02) 100%);
+}
+.price-card.featured::before {
+  content: 'BEST VALUE';
+  position: absolute; top: -1px; left: 26px;
+  background: var(--gold); color: #06080A;
+  font-size: 0.58rem; font-weight: 800; letter-spacing: 2.5px;
+  padding: 4px 12px; border-radius: 0 0 5px 5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.pc-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+}
+.pc-price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.pc-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.2rem; font-weight: 700; color: var(--gold); line-height: 1;
+}
+.pc-price .curr { font-size: 0.9rem; color: var(--muted); }
+.pc-was { font-size: 0.85rem; color: var(--muted); text-decoration: line-through; }
+.pc-save { background: rgba(34,216,122,0.1); color: var(--green); font-size: 0.68rem; padding: 3px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; }
+.pc-note { font-size: 0.8rem; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+.pc-cta { display: block; text-align: center; }
+
+/* ══════════════════════
+   COMMUNITY — PAGE 3
+══════════════════════ */
+#community {
+  padding: 110px 56px 120px;
+  background:
+    radial-gradient(ellipse 70% 50% at 90% 15%, rgba(212,168,67,0.05) 0%, transparent 45%),
+    var(--bg);
+  position: relative;
+}
+
+.comm-banner {
+  max-width: 1100px; margin: 0 auto 72px;
+  display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 0;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.comm-left { padding: 52px; border-right: 1px solid var(--border); }
+.comm-right {
+  padding: 52px;
+  background: linear-gradient(135deg, rgba(212,168,67,0.06) 0%, rgba(212,168,67,0.02) 100%);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center;
+}
+
+.comm-h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.4rem; letter-spacing: 2px; line-height: 1;
+  margin-bottom: 16px; color: var(--text);
+}
+.comm-h2 em { font-style: normal; color: var(--gold); }
+.comm-desc { color: var(--muted); font-size: 0.88rem; line-height: 1.8; margin-bottom: 28px; }
+
+.comm-feats {
+  list-style: none;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-bottom: 0;
+}
+.comm-feats li {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; color: var(--muted);
+}
+.comm-feats li::before { content: '◆'; color: var(--gold); font-size: 0.45rem; flex-shrink: 0; }
+
+.comm-right-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+.comm-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3rem; font-weight: 700; color: var(--gold); line-height: 1;
+  margin-bottom: 6px;
+}
+.comm-price .cc { font-size: 1.1rem; color: var(--muted); }
+.comm-type-badge {
+  display: inline-block;
+  background: rgba(34,216,122,0.1); color: var(--green);
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 24px;
+}
+.comm-avatars-row {
+  display: flex; align-items: center; gap: 10px;
+  justify-content: center; margin-top: 20px;
+  font-size: 0.75rem; color: var(--muted);
+}
+.c-av {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #7A5218);
+  color: #06080A; font-weight: 700; font-size: 0.7rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg3);
+  margin-left: -8px;
+}
+.c-av:first-child { margin-left: 0; }
+
+/* ── ROI STATS ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  max-width: 1100px; margin: 0 auto 72px;
+}
+.stat-cell {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 28px 22px; text-align: center;
+  transition: border-color 0.3s, transform 0.25s;
+}
+.stat-cell:hover { border-color: rgba(212,168,67,0.3); transform: translateY(-3px); }
+.stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem; font-weight: 700; color: var(--gold); line-height: 1;
+}
+.stat-unit { font-size: 1.1rem; color: var(--green); }
+.stat-lbl { font-size: 0.65rem; color: var(--muted); letter-spacing: 1.8px; text-transform: uppercase; margin-top: 7px; }
+
+/* ── REVIEWS ── */
+.reviews-header { max-width: 1100px; margin: 0 auto 20px; }
+.reviews-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  max-width: 1100px; margin: 0 auto;
+}
+.review-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 14px; padding: 30px 28px;
+  display: flex; flex-direction: column;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.review-card:hover { border-color: rgba(212,168,67,0.25); transform: translateY(-4px); }
+.review-card.big {
+  grid-column: span 2;
+  background: linear-gradient(135deg, rgba(212,168,67,0.06) 0%, rgba(212,168,67,0.01) 100%);
+  border-color: rgba(212,168,67,0.2);
+}
+.review-stars { color: var(--gold); font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 12px; }
+.review-q { font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; color: var(--gold); opacity: 0.25; line-height: 0.6; margin-bottom: 10px; }
+.review-text { font-size: 0.87rem; color: var(--text); line-height: 1.8; flex: 1; margin-bottom: 22px; }
+.review-bottom { display: flex; align-items: center; gap: 14px; }
+.r-av {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.88rem; color: #06080A; flex-shrink: 0;
+}
+.r-name { font-weight: 600; font-size: 0.88rem; }
+.r-role { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.r-earn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--green); font-weight: 600; margin-top: 3px;
+}
+
+/* ── FINAL CTA ── */
+.final-cta-wrap {
+  max-width: 720px; margin: 72px auto 0;
+  text-align: center; padding: 60px 48px;
+  background: linear-gradient(135deg, rgba(212,168,67,0.07) 0%, rgba(212,168,67,0.02) 100%);
+  border: 1px solid var(--border-bright);
+  border-radius: 18px; position: relative; overflow: hidden;
+}
+.final-cta-wrap::before {
+  content: '';
+  position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.final-cta-wrap h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.8rem; letter-spacing: 2px; margin-bottom: 16px; line-height: 1.05;
+}
+.final-cta-wrap h2 em { font-style: normal; color: var(--gold); }
+.final-cta-wrap p { color: var(--muted); font-size: 0.9rem; line-height: 1.75; margin-bottom: 36px; }
+.cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.cta-trust {
+  margin-top: 22px; font-size: 0.72rem; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+}
+.cta-trust span::before { content: '·'; margin-right: 8px; color: var(--border-bright); }
+.cta-trust span:first-child::before { display: none; }
+
+/* ── CONTACT ── */
+.contact-section {
+  max-width: 860px; margin: 64px auto 0; text-align: center;
+}
+.contact-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 14px;
+}
+.contact-h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem; letter-spacing: 2px; margin-bottom: 8px;
+}
+.contact-sub { color: var(--muted); font-size: 0.86rem; margin-bottom: 32px; }
+.contact-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+}
+.contact-card {
+  display: flex; align-items: center; gap: 18px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 22px 26px;
+  text-decoration: none; color: var(--text);
+  transition: border-color 0.3s, transform 0.25s;
+}
+.contact-card:hover { transform: translateY(-3px); }
+.contact-card.email:hover { border-color: var(--gold); }
+.contact-card.wa:hover { border-color: #25D366; }
+.cc-icon {
+  width: 46px; height: 46px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.email .cc-icon { background: rgba(212,168,67,0.1); color: var(--gold); }
+.wa .cc-icon { background: rgba(37,211,102,0.1); color: #25D366; }
+.cc-lbl { font-size: 0.68rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+.cc-val { font-size: 0.86rem; font-weight: 600; }
+
+/* ══════════════════════
+   FOOTER
+══════════════════════ */
+footer {
+  background: var(--bg2); border-top: 1px solid var(--border);
+  padding: 60px 56px 32px; margin-bottom: 36px;
+}
+.footer-inner { max-width: 1100px; margin: 0 auto; }
+.footer-top {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+  padding-bottom: 42px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  margin-bottom: 28px;
+}
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem; letter-spacing: 3px; color: var(--gold); margin-bottom: 6px;
+}
+.footer-logo span { color: var(--text); }
+.footer-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px;
+}
+.footer-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.75; }
+.fl-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 18px;
+}
+.footer-col { display: flex; flex-direction: column; gap: 11px; }
+.footer-col a { font-size: 0.82rem; color: var(--muted); text-decoration: none; transition: color 0.25s; }
+.footer-col a:hover { color: var(--gold); }
+.footer-col span { font-size: 0.8rem; color: var(--muted); }
+.footer-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.72rem; color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ══════════════════════
+   RESPONSIVE
+══════════════════════ */
+@media (max-width: 960px) {
+  nav { padding: 0 24px; }
+  .nav-center { display: none; }
+  #hero { padding: 88px 24px 60px; }
+  .hero-wrap { grid-template-columns: 1fr; gap: 44px; }
+  #programs { padding: 80px 24px 60px; }
+  .programs-grid { grid-template-columns: 1fr; }
+  .pricing-inner { grid-template-columns: 1fr; gap: 32px; }
+  #community { padding: 80px 24px 80px; }
+  .comm-banner { grid-template-columns: 1fr; }
+  .comm-left { border-right: none; border-bottom: 1px solid var(--border); }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .reviews-grid { grid-template-columns: 1fr; }
+  .review-card.big { grid-column: span 1; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
+  footer { padding: 40px 24px 28px; margin-bottom: 36px; }
+  .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+  .pricing-box { padding: 36px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════ NAV ════ -->
+<nav>
+  <div class="nav-logo">Hunar<span>Hub</span></div>
+  <div class="nav-center">
+    <a href="#hero">Home</a>
+    <a href="#programs">Programs</a>
+    <a href="#community">Community</a>
+  </div>
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLScl0P8dwMaht-TOIRmyAvsHl0qpxtv8qr6cM14SXEnZETpI4g/viewform" target="_blank" class="nav-cta">Enroll Now</a>
+</nav>
+
+<!-- ════ TICKER ════ -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack">
+    <span class="t-item"><span class="t-sym">BTC/USDT</span> $67,420 <span class="t-up">▲ +2.4%</span></span>
+    <span class="t-item"><span class="t-sym">ETH/USDT</span> $3,280 <span class="t-up">▲ +1.8%</span></span>
+    <span class="t-item"><span class="t-sym">EUR/USD</span> 1.0842 <span class="t-dn">▼ −0.12%</span></span>
+    <span class="t-item"><span class="t-sym">GBP/PKR</span> 350.25 <span class="t-up">▲ +0.5%</span></span>
+    <span class="t-item"><span class="t-sym">KSE-100</span> 79,420 <span class="t-up">▲ +1.1%</span></span>
+    <span class="t-item"><span class="t-sym">ENGRO</span> 342.50 <span class="t-up">▲ +3.2%</span></span>
+    <span class="t-item"><span class="t-sym">SOL/USDT</span> $142.30 <span class="t-up">▲ +4.1%</span></span>
+    <span class="t-item"><span class="t-sym">USD/PKR</span> 278.50 <span class="t-dn">▼ −0.08%</span></span>
+    <span class="t-item"><span class="t-sym">LUCKY</span> 998.75 <span class="t-up">▲ +2.0%</span></span>
+    <span class="t-item"><span class="t-sym">XAU/USD</span> $2,310 <span class="t-up">▲ +0.6%</span></span>
+    <!-- duplicate -->
+    <span class="t-item"><span class="t-sym">BTC/USDT</span> $67,420 <span class="t-up">▲ +2.4%</span></span>
+    <span class="t-item"><span class="t-sym">ETH/USDT</span> $3,280 <span class="t-up">▲ +1.8%</span></span>
+    <span class="t-item"><span class="t-sym">EUR/USD</span> 1.0842 <span class="t-dn">▼ −0.12%</span></span>
+    <span class="t-item"><span class="t-sym">GBP/PKR</span> 350.25 <span class="t-up">▲ +0.5%</span></span>
+    <span class="t-item"><span class="t-sym">KSE-100</span> 79,420 <span class="t-up">▲ +1.1%</span></span>
+    <span class="t-item"><span class="t-sym">ENGRO</span> 342.50 <span class="t-up">▲ +3.2%</span></span>
+    <span class="t-item"><span class="t-sym">SOL/USDT</span> $142.30 <span class="t-up">▲ +4.1%</span></span>
+    <span class="t-item"><span class="t-sym">USD/PKR</span> 278.50 <span class="t-dn">▼ −0.08%</span></span>
+    <span class="t-item"><span class="t-sym">LUCKY</span> 998.75 <span class="t-up">▲ +2.0%</span></span>
+    <span class="t-item"><span class="t-sym">XAU/USD</span> $2,310 <span class="t-up">▲ +0.6%</span></span>
+  </div>
+</div>
+
+<!-- ════ HERO ════ -->
+<section id="hero">
+  <div class="hero-wrap">
+    <!-- LEFT -->
+    <div>
+      <div class="hero-eyebrow">
+        <div class="dot"></div>
+        Pakistan's #1 Trading Education
+      </div>
+      <h1 class="hero-h1">
+        Master the Art
+        <span class="accent">of Trading</span>
+        <span class="stroke">&amp; Investing</span>
+      </h1>
+      <p class="hero-desc">
+        From Crypto &amp; Forex to the Pakistan Stock Exchange — learn to trade,
+        build wealth, and generate real income. Taught by practitioners, not theorists.
+      </p>
+      <div class="hero-stats">
+        <div class="hstat">
+          <div class="hstat-num"><span class="count-up" data-target="3500">0</span><sup>+</sup></div>
+          <div class="hstat-lbl">Community Members</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-num"><span class="count-up" data-target="4">0</span></div>
+          <div class="hstat-lbl">Trading Markets</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-num"><span class="count-up" data-target="92">0</span><sup>%</sup></div>
+          <div class="hstat-lbl">Success Rate</div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl0P8dwMaht-TOIRmyAvsHl0qpxtv8qr6cM14SXEnZETpI4g/viewform" target="_blank" class="btn-gold">📋 Fill Enrollment Form</a>
+        <a href="#programs" class="btn-ghost">Explore Programs</a>
+      </div>
+    </div>
+
+    <!-- RIGHT: Chart -->
+    <div class="chart-panel">
+      <div class="cp-header">
+        <span class="cp-title">Portfolio Performance</span>
+        <span class="cp-live">Live Markets</span>
+      </div>
+      <div class="chart-body">
+        <div class="chart-canvas-wrap">
+          <canvas id="heroChart"></canvas>
+        </div>
+      </div>
+      <div class="market-tiles">
+        <div class="m-tile">
+          <div>
+            <div class="m-sym">BTC/USDT</div>
+            <div class="m-price">$67,420</div>
+          </div>
+          <div class="m-chg up">▲ 2.4%</div>
+        </div>
+        <div class="m-tile">
+          <div>
+            <div class="m-sym">KSE-100</div>
+            <div class="m-price">79,420</div>
+          </div>
+          <div class="m-chg up">▲ 1.1%</div>
+        </div>
+        <div class="m-tile">
+          <div>
+            <div class="m-sym">EUR/USD</div>
+            <div class="m-price">1.0842</div>
+          </div>
+          <div class="m-chg dn">▼ 0.12%</div>
+        </div>
+        <div class="m-tile">
+          <div>
+            <div class="m-sym">ENGRO</div>
+            <div class="m-price">342.50</div>
+          </div>
+          <div class="m-chg up">▲ 3.2%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ PROGRAMS ════ -->
+<section id="programs">
+  <div class="section-eyebrow"><span>What We Teach</span></div>
+  <h2 class="section-h2 reveal">Four <span>Trading Markets.</span><br>One Complete Education.</h2>
+  <p class="section-sub reveal">Structured, step-by-step programs covering every major trading market — with real signals, live mentorship, and a community of 3,500+ active traders.</p>
+
+  <div class="programs-grid">
+
+    <!-- CRYPTO -->
+    <div class="prog-card crypto reveal">
+      <div class="pc-num">01</div>
+      <div class="pc-icon-wrap">₿</div>
+      <h3>Crypto Trading</h3>
+      <p>Master Bitcoin, Ethereum, altcoins &amp; DeFi. Learn technical analysis, spot trading, futures, risk management &amp; how to profit in both bull and bear markets.</p>
+      <div class="bar-label"><span>Earning Potential</span><span style="color:var(--green)">Very High</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:92%"></div></div>
+      <div class="sparkline-wrap"><canvas id="cryptoChart"></canvas></div>
+      <div class="pc-tags">
+        <span class="pc-tag">BTC/ETH</span>
+        <span class="pc-tag">Futures</span>
+        <span class="pc-tag">Altcoins</span>
+        <span class="pc-tag">DeFi</span>
+        <span class="pc-tag">TA</span>
+      </div>
+    </div>
+
+    <!-- FOREX -->
+    <div class="prog-card forex reveal">
+      <div class="pc-num">02</div>
+      <div class="pc-icon-wrap">💱</div>
+      <h3>Forex Trading</h3>
+      <p>Trade the world's largest financial market. Learn currency pairs, price action, major/minor pairs, and consistent strategies to extract profit from Forex daily.</p>
+      <div class="bar-label"><span>Earning Potential</span><span style="color:var(--green)">High</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:84%"></div></div>
+      <div class="sparkline-wrap"><canvas id="forexChart"></canvas></div>
+      <div class="pc-tags">
+        <span class="pc-tag">EUR/USD</span>
+        <span class="pc-tag">Price Action</span>
+        <span class="pc-tag">Smart Money</span>
+        <span class="pc-tag">Scalping</span>
+      </div>
+    </div>
+
+    <!-- PSX TRADING -->
+    <div class="prog-card psx-t reveal">
+      <div class="pc-num">03</div>
+      <div class="pc-icon-wrap">📊</div>
+      <h3>PSX Trading</h3>
+      <p>Navigate the Pakistan Stock Exchange like a pro. Learn to read KSE-100, pick winning stocks, execute short-term trades &amp; generate consistent PKR income locally.</p>
+      <div class="bar-label"><span>Earning Potential</span><span style="color:var(--green)">Very High</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:88%"></div></div>
+      <div class="sparkline-wrap"><canvas id="psxChart"></canvas></div>
+      <div class="pc-tags">
+        <span class="pc-tag">KSE-100</span>
+        <span class="pc-tag">Stock Picking</span>
+        <span class="pc-tag">Short-Term</span>
+        <span class="pc-tag">Fundamentals</span>
+      </div>
+    </div>
+
+    <!-- PSX INVESTING -->
+    <div class="prog-card psx-i reveal">
+      <div class="pc-num">04</div>
+      <div class="pc-icon-wrap">💰</div>
+      <h3>PSX Long-Term Investing</h3>
+      <p>Build generational wealth through Pakistan's stock market. Learn dividend investing, blue-chip analysis, portfolio diversification &amp; compound growth strategies.</p>
+      <div class="bar-label"><span>Earning Potential</span><span style="color:var(--gold)">Steady &amp; Compounding</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:76%"></div></div>
+      <div class="sparkline-wrap"><canvas id="psxiChart"></canvas></div>
+      <div class="pc-tags">
+        <span class="pc-tag">Dividends</span>
+        <span class="pc-tag">Blue Chips</span>
+        <span class="pc-tag">Portfolio</span>
+        <span class="pc-tag">Compounding</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PRICING -->
+  <div class="pricing-box reveal">
+    <div class="pricing-inner">
+      <div class="pricing-left">
+        <h2>Full Course Access.<br>One Transparent Price.</h2>
+        <p>Everything you need — from complete beginner to confident trader. Lifetime access, live mentorship, and real community support. No hidden fees.</p>
+        <ul class="inc-list">
+          <li>Complete Crypto, Forex, PSX Trading &amp; PSX Investing modules</li>
+          <li>Live sessions &amp; recorded video lessons</li>
+          <li>One-on-one mentorship access</li>
+          <li>Lifetime course updates — free forever</li>
+          <li>Certificate of completion</li>
+          <li>Access to alumni &amp; student network</li>
+          <li>Risk management frameworks &amp; cheat sheets</li>
+        </ul>
+      </div>
+      <div class="price-cards">
+        <!-- Featured -->
+        <div class="price-card featured">
+          <div class="pc-type">Complete Masterclass — One-Time</div>
+          <div class="pc-price-row">
+            <div class="pc-price"><span class="curr">PKR </span>8,999</div>
+            <div>
+              <div class="pc-was">PKR 12,000</div>
+              <div class="pc-save">Save 25%</div>
+            </div>
+          </div>
+          <p class="pc-note">Limited-time discounted price. Full course access, lifetime updates, and everything listed — at 25% off the regular price.</p>
+          <div class="pc-cta">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScl0P8dwMaht-TOIRmyAvsHl0qpxtv8qr6cM14SXEnZETpI4g/viewform" target="_blank" class="btn-gold" style="font-size:0.82rem;padding:12px 26px;">Fill Enrollment Form →</a>
+          </div>
+        </div>
+        <!-- Community -->
+        <div class="price-card">
+          <div class="pc-type">Paid Community — One-Time Lifetime</div>
+          <div class="pc-price-row">
+            <div class="pc-price"><span class="curr">PKR </span>4,999</div>
+          </div>
+          <p class="pc-note">Daily signals, expert guidance, 24/7 community support, market alerts, investment research &amp; much more. Lifetime access.</p>
+          <div class="pc-cta">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScl0P8dwMaht-TOIRmyAvsHl0qpxtv8qr6cM14SXEnZETpI4g/viewform" target="_blank" class="btn-ghost" style="font-size:0.82rem;padding:12px 26px;display:inline-block;">Fill Enrollment Form →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════ COMMUNITY + REVIEWS ════ -->
+<section id="community">
+
+  <div class="section-eyebrow"><span>Our Community</span></div>
+  <h2 class="section-h2 reveal">Join 3,500<span>+ Traders</span><br>Already Making Money</h2>
+  <p class="section-sub reveal">Our paid community is where real trading happens — daily signals, expert breakdowns, and a 24/7 network driving toward financial freedom.</p>
+
+  <!-- Community Banner -->
+  <div class="comm-banner reveal">
+    <div class="comm-left">
+      <h2 class="comm-h2">The <em>HunarHub</em><br>Trader Community</h2>
+      <p class="comm-desc">Get daily trading signals, expert guidance, market breakdowns, PSX alerts, crypto calls, and a 24/7 network of traders all working toward the same goal — financial freedom.</p>
+      <ul class="comm-feats">
+        <li>Daily Trading Signals</li>
+        <li>Expert Market Guidance</li>
+        <li>Crypto &amp; Forex Calls</li>
+        <li>PSX Stock Alerts</li>
+        <li>Lifetime Support</li>
+        <li>Investment Research</li>
+        <li>Weekly Live Sessions</li>
+        <li>Risk Management Tips</li>
+        <li>Exclusive Webinars</li>
+        <li>Alumni Network Access</li>
+      </ul>
+    </div>
+    <div class="comm-right">
+      <div class="comm-right-label">One-Time Fee — Lifetime Access</div>
+      <div class="comm-price"><span class="cc">PKR </span>4,999</div>
+      <div class="comm-type-badge">◆ Lifetime Membership</div>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLScl0P8dwMaht-TOIRmyAvsHl0qpxtv8qr6cM14SXEnZETpI4g/viewform" target="_blank" class="btn-gold">Fill Enrollment Form</a>
+      <div class="comm-avatars-row">
+        <div class="c-av">A</div>
+        <div class="c-av">S</div>
+        <div class="c-av">M</div>
+        <div class="c-av">R</div>
+        <div class="c-av">Z</div>
+        &nbsp;3,500+ active members
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row reveal">
+    <div class="stat-cell">
+      <div class="stat-num"><span class="count-up" data-target="3500">0</span><span class="stat-unit">+</span></div>
+      <div class="stat-lbl">Students Trained</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num"><span class="count-up" data-target="92">0</span><span class="stat-unit">%</span></div>
+      <div class="stat-lbl">Profitable Traders</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num"><span class="count-up" data-target="4">0</span><span class="stat-unit"> Mkts</span></div>
+      <div class="stat-lbl">Markets Covered</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">PKR <span class="count-up" data-target="50">0</span><span class="stat-unit">K+</span></div>
+      <div class="stat-lbl">Avg Monthly Student Earn</div>
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="reviews-header">
+    <div class="section-eyebrow" style="justify-content:flex-start;margin-bottom:12px;"><span>Student Success Stories</span></div>
+    <h2 class="section-h2 reveal" style="text-align:left;margin-bottom:32px;">Real <span>Results</span>. Real People.</h2>
+  </div>
+  <div class="reviews-grid">
+
+    <!-- Big featured -->
+    <div class="review-card big reveal">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-q">"</div>
+      <p class="review-text">HunarHub completely changed my financial life. I was a fresh graduate with no idea about trading. After completing the Crypto &amp; Forex program, I started with small capital and within 3 months I was making consistent profits. The trading signals in the community are accurate and the instructor's guidance is genuinely world-class. I am now earning more from trading than from my full-time job. Best investment I ever made in myself.</p>
+      <div class="review-bottom">
+        <div class="r-av" style="background:linear-gradient(135deg,#D4A843,#60440C)">AK</div>
+        <div>
+          <div class="r-name">Ahmed Karim</div>
+          <div class="r-role">Crypto &amp; Forex Trader · Lahore</div>
+          <div class="r-earn">Monthly Income: PKR 85,000+</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-q">"</div>
+      <p class="review-text">Maine PSX trading seekhi HunarHub se aur aaj mera portfolio 2x ho chuka hai. Signals bhi perfect hain aur community ka support 24/7 milta hai. Life changing experience!</p>
+      <div class="review-bottom">
+        <div class="r-av" style="background:linear-gradient(135deg,#00B4D8,#0077A8)">SF</div>
+        <div>
+          <div class="r-name">Sara Farhan</div>
+          <div class="r-role">PSX Investor · Faisalabad</div>
+          <div class="r-earn">Portfolio Growth: +120% in 8 months</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-q">"</div>
+      <p class="review-text">Pehle main YouTube se seekhta tha but kuch samajh nahi aata tha. HunarHub ke structured course ne sab clear kar diya. Community mein daily signals milte hain — ab main Forex aur Crypto dono trade karta hoon.</p>
+      <div class="review-bottom">
+        <div class="r-av" style="background:linear-gradient(135deg,#22D87A,#0A6633)">UR</div>
+        <div>
+          <div class="r-name">Usman Raza</div>
+          <div class="r-role">Forex Trader · Karachi</div>
+          <div class="r-earn">Monthly Profit: PKR 60,000+</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-q">"</div>
+      <p class="review-text">The PSX long-term investing module was an eye-opener. I now have a diversified portfolio in dividend stocks and blue chips. The lifetime community support means I never feel alone in my investing journey. Highly recommend to every Pakistani youth.</p>
+      <div class="review-bottom">
+        <div class="r-av" style="background:linear-gradient(135deg,#9B59B6,#6C3483)">ZM</div>
+        <div>
+          <div class="r-name">Zara Mirza</div>
+          <div class="r-role">PSX Long-Term Investor · Islamabad</div>
+          <div class="r-earn">Dividend Yield: 18% annually</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card reveal">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-q">"</div>
+      <p class="review-text">PKR 4,999 for lifetime community is the best deal in Pakistan. Signals, support, webinars — sab kuch milta hai. Maine 3 months mein investment recover kar li aur ab pure profit mein hoon. Arslan bhai's teaching style is unmatched.</p>
+      <div class="review-bottom">
+        <div class="r-av" style="background:linear-gradient(135deg,#E67E22,#A04000)">HA</div>
+        <div>
+          <div class="r-name">Hassan Ali</div>
+          <div class="r-role">Crypto Trader · Rawalpindi</div>
+          <div class="r-earn">ROI on Course: 10x in 3 months</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Final CTA -->
+  <div class="final-cta-wrap reveal">
+    <h2>Your Trading Journey<br>Starts <em>Today</em></h2>
+    <p>Join Pakistan's fastest-growing trading education community. Whether you want to trade Crypto, Forex, or the PSX — we have the roadmap, the signals, and the community to get you there.</p>
+    <div class="cta-btns">
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLScl0P8dwMaht-TOIRmyAvsHl0qpxtv8qr6cM14SXEnZETpI4g/viewform" target="_blank" class="btn-gold">📋 Fill Enrollment Form</a>
+    </div>
+    <div class="cta-trust">
+      <span>🔒 Secure</span>
+      <span>✦ Lifetime Access</span>
+      <span>3,500+ Active Members</span>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="contact-section reveal">
+    <div class="contact-eyebrow">Get In Touch</div>
+    <h3 class="contact-h3">Have Questions? We're Here.</h3>
+    <p class="contact-sub">Reach out before enrolling — our team responds within hours.</p>
+    <div class="contact-grid">
+      <a href="mailto:hunarhub.edu.pk@gmail.com" class="contact-card email">
+        <div class="cc-icon">✉</div>
+        <div>
+          <div class="cc-lbl">Email Us</div>
+          <div class="cc-val">hunarhub.edu.pk@gmail.com</div>
+        </div>
+      </a>
+      <a href="https://wa.me/message/NHDB7Z7POFBSI1" target="_blank" class="contact-card wa">
+        <div class="cc-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div>
+          <div class="cc-lbl">WhatsApp Us</div>
+          <div class="cc-val">Chat with our team directly</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════ FOOTER ════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo">Hunar<span>Hub</span></div>
+        <div class="footer-tagline">Skill. Learn. Earn.</div>
+        <p class="footer-desc">Pakistan's premier trading education platform. Empowering 3,500+ students to trade Crypto, Forex &amp; PSX with confidence.</p>
+      </div>
+      <div class="footer-col">
+        <div class="fl-head">Programs</div>
+        <a href="#programs">Crypto Trading</a>
+        <a href="#programs">Forex Trading</a>
+        <a href="#programs">PSX Trading</a>
+        <a href="#programs">PSX Investing</a>
+      </div>
+      <div class="footer-col">
+        <div class="fl-head">Pricing</div>
+        <a href="#programs">Course — PKR 8,999</a>
+        <a href="#community">Community — PKR 4,999</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScl0P8dwMaht-TOIRmyAvsHl0qpxtv8qr6cM14SXEnZETpI4g/viewform" target="_blank">Enrollment Form</a>
+      </div>
+      <div class="footer-col">
+        <div class="fl-head">Contact</div>
+        <a href="mailto:hunarhub.edu.pk@gmail.com">hunarhub.edu.pk@gmail.com</a>
+        <a href="https://wa.me/message/NHDB7Z7POFBSI1" target="_blank">WhatsApp</a>
+        <span>Faisalabad, Pakistan 🇵🇰</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 HunarHub. All rights reserved.</span>
+      <span>Skill. Learn. Earn. 🇵🇰</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── HERO CHART ───
+(function(){
+  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const data = [42,51,47,62,58,74,69,85,91,88,96,110];
+  const ctx = document.getElementById('heroChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,0,160);
+  grad.addColorStop(0,'rgba(212,168,67,0.22)');
+  grad.addColorStop(1,'rgba(212,168,67,0)');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        data,
+        borderColor:'#D4A843',
+        borderWidth:2,
+        fill:true,
+        backgroundColor:grad,
+        tension:0.45,
+        pointRadius:0,
+        pointHoverRadius:5,
+        pointHoverBackgroundColor:'#D4A843'
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'rgba(6,8,10,0.92)',
+        borderColor:'rgba(212,168,67,0.25)',borderWidth:1,
+        titleColor:'#D4A843',bodyColor:'#6B7A8D',
+        callbacks:{label:d=>`  +${d.raw}% return`}
+      }},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.025)'},ticks:{color:'#6B7A8D',font:{size:9,family:'JetBrains Mono'}}},
+        y:{grid:{color:'rgba(255,255,255,0.025)'},ticks:{color:'#6B7A8D',font:{size:9,family:'JetBrains Mono'},callback:v=>v+'%'}}
+      }
+    }
+  });
+})();
+
+// ─── SPARKLINES ───
+function sparkline(id, data, color){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const c = ctx.getContext('2d');
+  const g = c.createLinearGradient(0,0,0,50);
+  g.addColorStop(0, color.replace('1)','0.18)'));
+  g.addColorStop(1, color.replace('1)','0)'));
+  new Chart(c,{
+    type:'line',
+    data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:color,borderWidth:1.5,fill:true,backgroundColor:g,tension:0.4,pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false},y:{display:false}}}
+  });
+}
+sparkline('cryptoChart',[42,58,51,70,66,80,76,95,88,110],'rgba(247,147,26,1)');
+sparkline('forexChart',[60,58,65,62,68,72,69,75,73,80],'rgba(0,180,216,1)');
+sparkline('psxChart',[50,54,52,60,63,58,68,72,70,82],'rgba(34,216,122,1)');
+sparkline('psxiChart',[45,48,47,52,55,58,57,62,65,70],'rgba(212,168,67,1)');
+
+// ─── REVEAL ───
+const obs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ─── COUNT UP ───
+function countUp(el, target, duration=1800){
+  let start=0, step=target/duration*16;
+  const tick=()=>{
+    start=Math.min(start+step,target);
+    el.textContent=Math.floor(start).toLocaleString();
+    if(start<target) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+const cObs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.count-up').forEach(el=>{
+        countUp(el, parseInt(el.dataset.target));
+      });
+      cObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('.hstat,.stat-cell').forEach(el=>cObs.observe(el));
+
+// ─── ANIMATE BARS on scroll ───
+const barObs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.bar-fill').forEach(b=>{
+        b.style.animation='fillBar 1.6s ease both';
+      });
+    }
+  });
+},{threshold:0.15});
+document.querySelectorAll('.prog-card').forEach(el=>barObs.observe(el));
+</script>
+</body>
+</html>
